@@ -7,6 +7,10 @@
 
 import Foundation
 
+
+
+
+
 enum ResultState{
     case isLoading
     case idle

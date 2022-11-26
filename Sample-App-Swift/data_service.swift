@@ -32,18 +32,31 @@ struct PhotoModel : Identifiable, Codable {
 }
 
 
-
 class DataServiceViewModel : ObservableObject{
     @Published var post : [PostModel] = []
     @Published var photo : [PhotoStruct] = []
+    @Published var photosDetails : PhotoDetails?
     @Published var loading : Bool = false
+    @Published var isFetching : Bool = false
+    @Published private(set) var viewState : ResultStateVM?
     private (set) var state: ResultState = .idle
     private let dataService = PhotoService(dataService: NetworkManager())
+    private let dataSource = GetUseCase(repo: PhotoRepositoryImpl(dataSource: PhotoDataSourceImpl()))
     var cancellables = Set<AnyCancellable>()
     
+    var isLoading : Bool{
+        viewState == .isLoading
+    }
+    var fetching : Bool{
+        viewState == .isFetching
+    }
+    
+    
+   private var page : Int = 1
+    private var totalPages = 0
+    
     init(){
-     
-          dIService()
+//     getPhoto()
         
     
 //        wrappedFunction()
@@ -62,6 +75,84 @@ class DataServiceViewModel : ObservableObject{
 //            }
 //            .store(in: &cancellables)
            
+    }
+    func getData(){
+        
+        viewState = .isLoading
+        defer{ viewState = .success}
+        
+        dataSource.getAllPhoto(pages: page)
+            .decode(type: [PhotoStruct].self, decoder: JSONDecoder())
+            .sink { completion in
+                switch completion {
+                case .finished:
+                   
+                 print("COMPLETED")
+                    
+                case .failure(let error):
+                    
+                 print("Failed: \(error.localizedDescription)")
+                }
+                
+                
+            } receiveValue: { [weak self] returnedVal in
+                self?.photo = returnedVal
+               
+             
+            }
+            .store(in: &cancellables)
+
+    }
+    
+    func loadMoreContent(photos: PhotoStruct){
+        viewState = .isFetching
+        defer{ viewState = .success}
+        
+        if (photo.last?.id == photos.id!){
+            page += 1
+         
+     dataSource.getAllPhoto(pages: page)
+         .decode(type: [PhotoStruct].self, decoder: JSONDecoder())
+         .sink { completion in
+             switch completion {
+             case .finished:
+                 self.isFetching = false
+              print("COMPLETED")
+             case .failure(let error):
+                 self.isFetching = false
+              print("Failed: \(error.localizedDescription)")
+             }
+             
+             
+         } receiveValue: { [weak self] returnedVal in
+             self?.photo += returnedVal
+          
+         }
+         .store(in: &cancellables)
+
+
+        }
+        
+       }
+    func getUserDetails(id: String){
+//            guard let url = URL(string: "https://api.unsplash.com/photos/\(id)?client_id=CK5_SZXnwCO7ORvuSV9E8UvYRi9Crl9soXY2t9Hwtgo") else {return}
+        dataSource.getDetails(id: id)
+            .decode(type: PhotoDetails.self, decoder: JSONDecoder())
+            .sink { completion in
+                switch completion {
+                case .finished:
+                 print("COMPLETED")
+                case .failure(let error):
+                 print("Failed: \(error.localizedDescription)")
+                }
+                
+                
+            } receiveValue: { [weak self] returnedVal in
+                self?.photosDetails = returnedVal
+             
+            }
+            .store(in: &cancellables)
+
     }
     
     // FIRST METHOD TO FETCH DATA FROM THE INTERNET
@@ -227,24 +318,10 @@ class DataServiceViewModel : ObservableObject{
     
     
     
-    func dIService(){
+    func getPhoto(){
         self.loading = true
 //        guard let url = URL(string: "https://api.unsplash.com/photos/?client_id=CK5_SZXnwCO7ORvuSV9E8UvYRi9Crl9soXY2t9Hwtgo") else {return}
-//
-//        dataService.getPhotos(url: url)
-//                    .sink { completion in
-//                        switch completion {
-//                        case .finished:
-//                            print("fin")
-//                        case .failure(let err):
-//                            print("failed: \(err.localizedDescription)")
-//
-//                        }
-//                    } receiveValue: { [weak self] returnedValue in
-//                      print(returnedValue)
-//                        self?.loading = false
-//                    }
-//                    .store(in: &cancellables)
+
 
         dataService.$photos
             .sink { completion in
@@ -264,11 +341,38 @@ class DataServiceViewModel : ObservableObject{
         
         
     }
+    func getDetails(){
+        self.loading = true
+        dataService.$photosDetails
+            .sink { completion in
+                switch completion {
+                case .finished:
+                    print("fin")
+                case .failure(let err):
+                    print("failed: \(err.localizedDescription)")
+
+                }
+            } receiveValue: { [weak self] returnedValue in
+                self?.photosDetails = returnedValue
+                self?.loading = false
+            }
+            .store(in: &cancellables)
+
+        
+        
+    }
     
 }
 
-//struct data_service_Previews: PreviewProvider {
-//    static var previews: some View {
-//        data_service()
-//    }
-//}
+
+extension DataServiceViewModel{
+    enum ResultStateVM{
+        case isLoading
+        case isFetching
+        case success
+       
+    }
+    
+}
+
+

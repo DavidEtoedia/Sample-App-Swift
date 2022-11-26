@@ -12,23 +12,60 @@ struct ContentView: View {
 
     var body: some View {
       
-        if (viewModel.loading){
+        if (viewModel.isLoading){
             ProgressView()
         } else {
             NavigationView {
                 ScrollView {
-                    VStack (alignment: .trailing, spacing: 20){
+//                              GeometryReader { proxy in
+//                                Rectangle()
+//                                .frame(width: 0, height: 0)
+//                                .onChange(of: proxy.frame(in: .global).midY) { newValue in
+//
+//                                    if(newValue == -1842.0){
+//                                        viewModel.loadMoreContent()
+//
+//                                    }
+//                                    print(newValue)
+//                                }
+//                              }
+                        
+                    LazyVStack (alignment: .trailing, spacing: 20){
                         ForEach((viewModel.photo)) { post in
-                            
-                            PhotoListView(photoStruct: post)
+                            NavigationLink(destination: DetailView( user: post.user, photoId: post ), label: {
+                                PhotoListView(photoStruct: post)
+                                   
+                            })
+                            .accentColor(.black.opacity(0.7))
+                            .onAppear(){
+                                
+                                if(!viewModel.fetching){
+                                    print("NOT FECTHING")
+                                    viewModel.loadMoreContent(photos: post)
+                                    
+                                }
+                                
+                            }
+
                         }
                     }
-                    
                     .padding(.all, 20)
+                    .overlay(alignment: .bottom, content: {
+                        ProgressView()
+                        
+                    })
                 }
+                .navigationTitle("Unsplash")
+                
+                
+            
             }
+            .onAppear(perform: {
+                viewModel.getData()
+            })
 
         }
+        
  
     }
 
@@ -98,3 +135,6 @@ struct PhotoListView: View {
         .cornerRadius(10.0)
     }
 }
+
+
+

@@ -17,6 +17,16 @@ enum Endpoint: CustomStringConvertible {
     }
 }
 
+enum ApiKey: CustomStringConvertible {
+    case apiKey
+    var description: String {
+        switch self {
+        case .apiKey:
+            return "CK5_SZXnwCO7ORvuSV9E8UvYRi9Crl9soXY2t9Hwtgo"
+        }
+    }
+}
+
 //enum Audience: String, Printable {
 //    case Public = "Public"
 //    case Friends = "Friends"
