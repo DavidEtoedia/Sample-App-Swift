@@ -9,8 +9,8 @@ import Foundation
 
 struct PhotoDetails : Codable {
     let id : String?
-//    let description : String?
-//    let alt_description : String?
+    let description : String?
+    let alt_description : String?
     let urls : Urls?
     let likes : Int?
 //    let current_user_collections : [String]?
@@ -21,7 +21,7 @@ struct PhotoDetails : Codable {
 //    let tags : [String]?
 //    let tags_preview : [String]?
     let downloads : Int?
-//    let related_collections : Related_collections?
+    let related_collections : Related_collections?
 
     enum CodingKeys: String, CodingKey {
 
@@ -38,14 +38,14 @@ struct PhotoDetails : Codable {
 //        case tags = "tags"
 //        case tags_preview = "tags_preview"
         case downloads = "downloads"
-//        case related_collections = "related_collections"
+        case related_collections = "related_collections"
     }
 
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         id = try values.decodeIfPresent(String.self, forKey: .id)
-//        description = try values.decodeIfPresent(String.self, forKey: .description)
-//        alt_description = try values.decodeIfPresent(String.self, forKey: .alt_description)
+        description = try values.decodeIfPresent(String.self, forKey: .description) ?? ""
+        alt_description = try values.decodeIfPresent(String.self, forKey: .alt_description) ?? ""
         urls = try values.decodeIfPresent(Urls.self, forKey: .urls)
         likes = try values.decodeIfPresent(Int.self, forKey: .likes)
 //        current_user_collections = try values.decodeIfPresent([String].self, forKey: .current_user_collections)
@@ -56,14 +56,15 @@ struct PhotoDetails : Codable {
 //        tags = try values.decodeIfPresent([String].self, forKey: .tags)
 //        tags_preview = try values.decodeIfPresent([String].self, forKey: .tags_preview)
         downloads = try values.decodeIfPresent(Int.self, forKey: .downloads)
-//        related_collections = try values.decodeIfPresent(Related_collections.self, forKey: .related_collections)
+        related_collections = try values.decodeIfPresent(Related_collections.self, forKey: .related_collections)
     }
     
     func encode(to encoder: Encoder) throws {
         var container =  encoder.container(keyedBy: CodingKeys.self)
         
         try container.encode(id, forKey: .id)
-//        try container.encode(alt_description, forKey: .alt_description)
+        try container.encode(alt_description, forKey: .alt_description)
+        try container.encode(description, forKey: .description)
         try container.encode(urls, forKey: .urls)
         try container.encode(likes, forKey: .likes)
 //        try container.encode(current_user_collections, forKey: .current_user_collections)
