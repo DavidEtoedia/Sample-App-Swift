@@ -35,13 +35,13 @@ struct PhotoModel : Identifiable, Codable {
 class DataServiceViewModel : ObservableObject{
     @Published var post : [PostModel] = []
     @Published var photo : [PhotoStruct] = []
+    @Published var preview_photo : [Preview_photos] = []
     @Published var photosDetails : PhotoDetails?
     @Published var loading : Bool = false
-    @Published var isFetching : Bool = false
+    @Published var isFetchingMore : Bool = false
     @Published private(set) var viewState : ResultStateVM?
-    private (set) var state: ResultState = .idle
-    private let dataService = PhotoService(dataService: NetworkManager())
     private let dataSource = GetUseCase(repo: PhotoRepositoryImpl(dataSource: PhotoDataSourceImpl()))
+    private let networkingManager: NetworkHelperProtocol
     var cancellables = Set<AnyCancellable>()
     
     var isLoading : Bool{
@@ -50,90 +50,90 @@ class DataServiceViewModel : ObservableObject{
     var fetching : Bool{
         viewState == .isFetching
     }
-    
+    init(networkingManager: NetworkHelperProtocol = NetworkHelper.shared) {
+           self.networkingManager = networkingManager
+       }
     
    private var page : Int = 1
     private var totalPages = 0
     
-    init(){
-//     getPhoto()
-        
-    
-//        wrappedFunction()
-//            .sink { _ in
+//    init(){
+////     getPhoto()
 //
-//            } receiveValue: { [weak self] returnedValue in
-//                if let data = returnedValue {
-//                    guard let newPost = try? JSONDecoder().decode([PhotoStruct].self, from: data) else {return}
-//                    DispatchQueue.main.async { [weak self] in
-//                        self?.photo = newPost
-//                        print(newPost)
 //
-//                    }
-//                }
+////        wrappedFunction()
+////            .sink { _ in
+////
+////            } receiveValue: { [weak self] returnedValue in
+////                if let data = returnedValue {
+////                    guard let newPost = try? JSONDecoder().decode([PhotoStruct].self, from: data) else {return}
+////                    DispatchQueue.main.async { [weak self] in
+////                        self?.photo = newPost
+////                        print(newPost)
+////
+////                    }
+////                }
+////
+////            }
+////            .store(in: &cancellables)
 //
-//            }
-//            .store(in: &cancellables)
-           
-    }
+//    }
+    // USING MVVM WITH COMBINE
     func getData(){
-        
+//        self.loading = true
+//        defer{
+//            self.loading = false
+//        }
         viewState = .isLoading
         defer{ viewState = .success}
-        
         dataSource.getAllPhoto(pages: page)
             .decode(type: [PhotoStruct].self, decoder: JSONDecoder())
             .sink { completion in
                 switch completion {
                 case .finished:
-                   
-                 print("COMPLETED")
-                    
+                print("COMPLETED DATA")
                 case .failure(let error):
-                    
-                 print("Failed: \(error.localizedDescription)")
+                print("Failed: \(error.localizedDescription)")
                 }
-                
-                
+  
             } receiveValue: { [weak self] returnedVal in
                 self?.photo = returnedVal
+                print("result here")
+//                self?.viewState = .success
+                
                
              
             }
             .store(in: &cancellables)
 
     }
-    
-    func loadMoreContent(photos: PhotoStruct){
-        viewState = .isFetching
-        defer{ viewState = .success}
+    // USING MVVM WITH COMBINE
+    func loadMoreContent(){
         
-        if (photo.last?.id == photos.id!){
+  
+        viewState = .isFetching
+        defer{  viewState = .success}
+        
             page += 1
-         
-     dataSource.getAllPhoto(pages: page)
+   dataSource.getAllPhoto(pages: page)
          .decode(type: [PhotoStruct].self, decoder: JSONDecoder())
          .sink { completion in
              switch completion {
              case .finished:
-                 self.isFetching = false
-              print("COMPLETED")
+               
+              print("COMPLETED LOAD MORE")
              case .failure(let error):
-                 self.isFetching = false
+               
               print("Failed: \(error.localizedDescription)")
              }
-             
-             
          } receiveValue: { [weak self] returnedVal in
              self?.photo += returnedVal
-          
+             self?.isFetchingMore = true
          }
          .store(in: &cancellables)
-
-
-        }
-        
+   
        }
+    // USING MVVM WITH COMBINE
     func getUserDetails(id: String){
 //            guard let url = URL(string: "https://api.unsplash.com/photos/\(id)?client_id=CK5_SZXnwCO7ORvuSV9E8UvYRi9Crl9soXY2t9Hwtgo") else {return}
         dataSource.getDetails(id: id)
@@ -141,19 +141,37 @@ class DataServiceViewModel : ObservableObject{
             .sink { completion in
                 switch completion {
                 case .finished:
-                 print("COMPLETED")
+                 print("COMPLETED DETAILS")
                 case .failure(let error):
                  print("Failed: \(error.localizedDescription)")
                 }
                 
-                
             } receiveValue: { [weak self] returnedVal in
                 self?.photosDetails = returnedVal
+              
              
             }
             .store(in: &cancellables)
 
     }
+    
+    // USING SWIFT CONCURRENCY METHOD FOR API CALL
+    
+    func getImages()async{
+        
+        do{
+            let res = try await networkingManager.photoReq(path: "photos", type: [PhotoStruct].self)
+            self.photo = res
+             
+        }catch{
+            
+            // THROW THE ERROR HERE
+            
+        }
+//
+
+    }
+
     
     // FIRST METHOD TO FETCH DATA FROM THE INTERNET
     
@@ -318,49 +336,49 @@ class DataServiceViewModel : ObservableObject{
     
     
     
-    func getPhoto(){
-        self.loading = true
-//        guard let url = URL(string: "https://api.unsplash.com/photos/?client_id=CK5_SZXnwCO7ORvuSV9E8UvYRi9Crl9soXY2t9Hwtgo") else {return}
-
-
-        dataService.$photos
-            .sink { completion in
-                switch completion {
-                case .finished:
-                    print("fin")
-                case .failure(let err):
-                    print("failed: \(err.localizedDescription)")
-
-                }
-            } receiveValue: { [weak self] returnedValue in
-                self?.photo = returnedValue
-                self?.loading = false
-            }
-            .store(in: &cancellables)
-
-        
-        
-    }
-    func getDetails(){
-        self.loading = true
-        dataService.$photosDetails
-            .sink { completion in
-                switch completion {
-                case .finished:
-                    print("fin")
-                case .failure(let err):
-                    print("failed: \(err.localizedDescription)")
-
-                }
-            } receiveValue: { [weak self] returnedValue in
-                self?.photosDetails = returnedValue
-                self?.loading = false
-            }
-            .store(in: &cancellables)
-
-        
-        
-    }
+//    func getPhoto(){
+//        self.loading = true
+////        guard let url = URL(string: "https://api.unsplash.com/photos/?client_id=CK5_SZXnwCO7ORvuSV9E8UvYRi9Crl9soXY2t9Hwtgo") else {return}
+//
+//
+//        dataService.$photos
+//            .sink { completion in
+//                switch completion {
+//                case .finished:
+//                    print("fin")
+//                case .failure(let err):
+//                    print("failed: \(err.localizedDescription)")
+//
+//                }
+//            } receiveValue: { [weak self] returnedValue in
+//                self?.photo = returnedValue
+//                self?.loading = false
+//            }
+//            .store(in: &cancellables)
+//
+//
+//
+//    }
+//    func getDetails(){
+//        self.loading = true
+//        dataService.$photosDetails
+//            .sink { completion in
+//                switch completion {
+//                case .finished:
+//                    print("fin")
+//                case .failure(let err):
+//                    print("failed: \(err.localizedDescription)")
+//
+//                }
+//            } receiveValue: { [weak self] returnedValue in
+//                self?.photosDetails = returnedValue
+//                self?.loading = false
+//            }
+//            .store(in: &cancellables)
+//
+//
+//
+//    }
     
 }
 

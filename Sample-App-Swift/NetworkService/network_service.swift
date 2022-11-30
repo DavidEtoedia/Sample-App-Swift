@@ -50,7 +50,20 @@ extension URL {
                request.setValue("application/json; charset=UTF-8", forHTTPHeaderField: "Content-type")
         return request.url
     }
+    
+   
+}
 
+extension URLRequest{
+    static func urlRequest(_ url : URL, _ method : String) -> URLRequest? {
+        var request = URLRequest(url: url)
+               request.httpMethod = method
+               request.setValue("application/json; charset=UTF-8", forHTTPHeaderField: "Content-type")
+        
+        return request
+    }
+
+    
 }
 
 
@@ -85,7 +98,7 @@ struct PhotoDataSourceImpl : PhotoDataSource {
             .eraseToAnyPublisher()
     }
     
-    
+    /// Using a Publisher
     func getPhotos(pages : Int) -> AnyPublisher<Data, Error> {
 //        var request = URLRequest(url: .url("photos")!)
 //               request.httpMethod = "GET"
@@ -110,7 +123,43 @@ struct PhotoDataSourceImpl : PhotoDataSource {
 
 
 
+protocol NetworkHelperProtocol {
+    func photoReq<T: Codable> (path : String, type : T.Type ) async throws -> T
+    
+    }
+
+final class NetworkHelper : NetworkHelperProtocol{
+    static let shared = NetworkHelper()
+
+    private init(){}
+    
+    
+    
+    func photoReq<T: Codable> (path : String, type : T.Type ) async throws -> T{
+        
+        let (data, response) = try await URLSession.shared.data(for: .urlRequest(.paginated(path, pageNum: 3)!, "GET")! )
+         guard let response  =  response as? HTTPURLResponse,
+               (200...300) ~= response.statusCode else {
+             let statusCode = (response as? HTTPURLResponse)?.statusCode
+             throw ApiError.errorCode(statusCode ?? 0)
+             
+         }
+        
+        let decode = JSONDecoder()
+        decode.keyDecodingStrategy = .convertFromSnakeCase
+        let res = try decode.decode(T.self, from: data)
+        return res
+        
+        
+    }
+    
+    
+}
+
+
 struct NetworkManager : NetworkService {
+    
+    
      func getPhotos(url: URL) -> AnyPublisher<Data, Error> {
         return URLSession.shared.dataTaskPublisher(for: url)
             .subscribe(on: DispatchQueue.global(qos: .default))
