@@ -11,11 +11,17 @@ import Combine
 protocol PhotoRepository {
     func getPhotos(pages : Int) -> AnyPublisher< Data, Error >
     func getDetails(_ id : String) -> AnyPublisher< Data, Error >
+    func search(search : String) -> AnyPublisher< Data, Error >
 }
 
 
 struct PhotoRepositoryImpl : PhotoRepository{
     var dataSource: PhotoDataSource
+    func search(search: String) -> AnyPublisher<Data, Error> {
+        return dataSource.search(search: search)
+    }
+    
+ 
     func getDetails(_ id : String) -> AnyPublisher<Data, Error> {
         return dataSource.getDetails(id: id)
     }
@@ -27,6 +33,8 @@ struct PhotoRepositoryImpl : PhotoRepository{
   
 }
 
+
+
 struct GetUseCase{
     var repo : PhotoRepository
     
@@ -35,6 +43,10 @@ struct GetUseCase{
     }
     func getDetails (id: String ) ->  AnyPublisher<Data, Error>{
         return repo.getDetails(id)
+    }
+    
+    func searchPhotos (search: String ) ->  AnyPublisher<Data, Error>{
+        return repo.search(search: search)
     }
 }
 

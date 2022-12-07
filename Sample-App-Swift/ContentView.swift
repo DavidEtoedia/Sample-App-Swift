@@ -9,8 +9,9 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject var viewModel = DataServiceViewModel()
+    @State private var search: String = ""
+    @State private var showSheet: Bool = false
     let spaceName = "scroll"
-
     @State var wholeSize: CGSize = .zero
     @State var scrollViewSize: CGSize = .zero
 
@@ -26,13 +27,14 @@ struct ContentView: View {
                         ChildSizeReader(size: $scrollViewSize) {
                             VStack (alignment: .leading, spacing: 20){
                                 ForEach((viewModel.photo)) { photo in
+                                   
                                     NavigationLink(destination: DetailView( user: photo.user, photo: photo ), label: {
                                         PhotoListView(photoStruct: photo)
-                                           
+
                                     })
                                     .accentColor(.black.opacity(0.7))
-                                  
-                                  
+
+
 
                                 }
 
@@ -86,12 +88,39 @@ struct ContentView: View {
                     }
                     .coordinateSpace(name: spaceName)
                     .navigationBarTitle("Unsplash", displayMode: .large)
+                    .navigationBarItems(trailing:
+                        Button(action: {
+                        self.showSheet = true
+                        }) {
+                            HStack {
+                                Image(systemName: "magnifyingglass")
+                                    .foregroundColor(.blue)
+                                Text("Search")
+                               
+                            }
+                        }
+                        .sheet(isPresented: $showSheet, onDismiss: {
+                            self.showSheet = false
+                            print(self.showSheet)
+                        },content: {
+                            SearchView()
+                            
+                        
+                        })
+                        
+                    )
                   
                 }
                 
             }
+//            .searchable(text: $search, prompt: "Search photos")
+//            .onChange(of: search){ val in
+////                val.isEmpty ?viewModel.searchPhotos(search: "office" ) :
+////                viewModel.searchPhotos(search: val )
+//
+//            }
             .onAppear(perform: {
-               viewModel.getData()
+                viewModel.getData()
                 print("view-state: \(viewModel.isLoading)")
 //                Task{
 //                    await viewModel.getImages()
@@ -156,12 +185,13 @@ struct PhotoListView: View {
     let photoStruct : PhotoStruct
     var body: some View {
         VStack {
-            HStack(alignment: .center, spacing: 30) {
+            HStack(alignment: .center, spacing: 20) {
                 ProfileImageView(userImageUrl: photoStruct.user?.profile_image?.medium)
                 VStack(alignment: .leading) {
-                    Text(photoStruct.user?.first_name ?? "")
-                        .font(.system(size: 20, weight: .medium))
-                    Text(photoStruct.user?.username ?? "")
+                    Text(photoStruct.user?.name ?? "")
+                    .font(.system(size: 20, weight: .medium))
+                        .truncationMode(.tail)
+                    Text(photoStruct.user?.username ?? "unknown")
                         .foregroundColor(.gray.opacity(0.7))
                 }
                 Spacer()
@@ -207,3 +237,82 @@ struct ImageView: View {
         }
     }
 }
+
+struct SearchView: View {
+    @StateObject var viewModel = DataServiceViewModel()
+    @State private var search: String = ""
+    @State private var showCancelButton: Bool = false
+    @Environment (\.presentationMode) var presentationDismiss
+    let column : [GridItem] = [
+        GridItem(.fixed(50), spacing: 120),
+        GridItem(.fixed(50), spacing: 120),
+    ]
+    var body: some View {
+        VStack(alignment: .trailing,spacing: 10) {
+            ZStack (alignment: .topLeading){
+                Button {
+                    presentationDismiss.wrappedValue.dismiss()
+                    
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+            }
+            }
+
+            Text("Search Photos")
+                .font(.system(size: 25, weight: .bold))
+                .padding(.horizontal, 100)
+            TextField("Search", text: $search, onEditingChanged: { isEditing in
+                // show or hide the cancel button
+                self.showCancelButton = true
+            }, onCommit: {
+                // hide the keyboard and cancel button
+                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                print($search)
+                viewModel.searchPhotos(search: search)
+                self.showCancelButton = false
+            })
+            .padding()
+            .background(Color(.systemGray6))
+            .cornerRadius(10)
+            .padding(.horizontal)
+            
+            if(viewModel.loading){
+                ProgressView()
+            } else{
+                ScrollView(showsIndicators: false) {
+                    LazyVGrid(columns: column) {
+                        ForEach((viewModel.result), id: \.id) { photo in
+                              AsyncImage(url: URL(string: photo.urls?.small ?? "")) { returnedImg in
+                                  returnedImg
+                                    .resizable()
+                                    .frame(width: 150.0, height: 150)
+                                    .aspectRatio(contentMode: .fill)
+                                    .clipShape(RoundedRectangle(cornerRadius: 6.0))
+                                      } placeholder: {
+                                          ProgressView()
+                                            .padding(.all, 20)
+                                                   }
+                                
+                                   }
+                    }
+                }
+        
+                        
+                       }
+            Spacer()
+
+        }
+        .padding(.top, 20)
+        .interactiveDismissDisabled(true)
+        
+
+  
+    }
+}
+
+struct SearchView_Previews: PreviewProvider {
+    static var previews: some View {
+        SearchView()
+    }
+}
+

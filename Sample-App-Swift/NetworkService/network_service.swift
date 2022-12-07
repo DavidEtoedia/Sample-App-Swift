@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 ///
-///
+/// https://api.unsplash.com/search/photos?page=2&query=office&client_id=CK5_SZXnwCO7ORvuSV9E8UvYRi9Crl9soXY2t9Hwtgo
 //extension URLL {
 //
 // static var forAllProducts: URL {
@@ -27,7 +27,7 @@ import Combine
 // GENERIC API ENDPOINTS WITH REQUEST
 extension URL {
     
-    static func url(_ path : String) -> URL? {
+    static func getPhotos(_ path : String) -> URL? {
         var components = URLComponents()
         components.scheme = "https"
         components.host = "api.unsplash.com"
@@ -44,6 +44,19 @@ extension URL {
         return components.url
     }
     
+    static func search (_ path : String, query : String) -> URL? {
+        var components = URLComponents()
+        components.scheme = "https"
+        components.host = "api.unsplash.com"
+        components.path = "/\(path)/photos/"
+        components.queryItems = [
+            URLQueryItem(name: "query", value: query),
+            URLQueryItem(name: "client_id", value: ApiKey.apiKey.description),
+        
+        ]
+        return components.url
+    }
+    
     static func request(_ url : URL, _ method : String) -> URL? {
         var request = URLRequest(url: url)
                request.httpMethod = method
@@ -53,6 +66,8 @@ extension URL {
     
    
 }
+
+// THIS IS FOR URLREQUEST PROTOCOL
 
 extension URLRequest{
     static func urlRequest(_ url : URL, _ method : String) -> URLRequest? {
@@ -77,13 +92,28 @@ protocol NetworkService {
 protocol PhotoDataSource {
  func getPhotos(pages : Int) -> AnyPublisher< Data, Error >
  func getDetails(id : String) -> AnyPublisher< Data, Error >
+ func search(search : String) -> AnyPublisher< Data, Error >
     
     }
 
 
 struct PhotoDataSourceImpl : PhotoDataSource {
+    func search(search: String) -> AnyPublisher<Data, Error> {
+        return URLSession.shared.dataTaskPublisher(for: .request(.search("search", query: search)!, "GET")!)
+            .subscribe(on: DispatchQueue.global(qos: .default))
+            .tryMap { output -> Data in
+                guard let response = output.response as? HTTPURLResponse,
+                      response.statusCode >= 200 && response.statusCode < 300 else {
+                    throw URLError(.badServerResponse)
+                }
+                return output.data
+            }
+            .receive(on: DispatchQueue.main)
+            .eraseToAnyPublisher()
+    }
+    
     func getDetails(id : String) -> AnyPublisher<Data, Error> {
-      return URLSession.shared.dataTaskPublisher(for: .request(.url("photos/\(id)")!, "GET")!)
+        return URLSession.shared.dataTaskPublisher(for: .request(.getPhotos("photos/\(id)")!, "GET")!)
             .subscribe(on: DispatchQueue.global(qos: .default))
             .tryMap { output -> Data in
                 guard let response = output.response as? HTTPURLResponse,

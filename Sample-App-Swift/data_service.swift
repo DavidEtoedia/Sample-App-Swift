@@ -35,6 +35,7 @@ struct PhotoModel : Identifiable, Codable {
 class DataServiceViewModel : ObservableObject{
     @Published var post : [PostModel] = []
     @Published var photo : [PhotoStruct] = []
+    @Published var result :  [Resultss] = []
     @Published var preview_photo : [Preview_photos] = []
     @Published var photosDetails : PhotoDetails?
     @Published var loading : Bool = false
@@ -49,6 +50,9 @@ class DataServiceViewModel : ObservableObject{
     }
     var fetching : Bool{
         viewState == .isFetching
+    }
+    var searching : Bool{
+        viewState == .searching
     }
     init(networkingManager: NetworkHelperProtocol = NetworkHelper.shared) {
            self.networkingManager = networkingManager
@@ -149,6 +153,30 @@ class DataServiceViewModel : ObservableObject{
             } receiveValue: { [weak self] returnedVal in
                 self?.photosDetails = returnedVal
               
+             
+            }
+            .store(in: &cancellables)
+
+    }
+    
+    //  SEARCH FOR PHOTOS
+    func searchPhotos(search: String){
+         loading = true
+        defer {loading = false}
+        
+        dataSource.searchPhotos(search: search)
+            .decode(type: SearchPhoto.self, decoder: JSONDecoder())
+            .sink { completion in
+                switch completion {
+                case .finished:
+                 print("COMPLETED Search")
+                case .failure(let error):
+                 print("Failed: \(error.localizedDescription)")
+                }
+                
+            } receiveValue: { [weak self] returnedVal in
+                print("RESULT: \(String(describing: returnedVal.results))")
+                self?.result = returnedVal.results ?? []
              
             }
             .store(in: &cancellables)
@@ -386,6 +414,7 @@ class DataServiceViewModel : ObservableObject{
 extension DataServiceViewModel{
     enum ResultStateVM{
         case isLoading
+        case searching
         case isFetching
         case success
        
