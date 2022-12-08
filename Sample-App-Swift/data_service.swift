@@ -87,6 +87,10 @@ class DataServiceViewModel : ObservableObject{
 //    }
     // USING MVVM WITH COMBINE
     func getData(){
+//        self.loading = true
+//        defer{
+//            self.loading = false
+//        }
         viewState = .isLoading
         defer{ viewState = .success}
         dataSource.getAllPhoto(pages: page)
@@ -183,6 +187,24 @@ class DataServiceViewModel : ObservableObject{
             .store(in: &cancellables)
 
     }
+    
+    // USING SWIFT CONCURRENCY METHOD FOR API CALL
+    
+    func getImages()async{
+        
+        do{
+            let res = try await networkingManager.photoReq(path: "photos", type: [PhotoStruct].self)
+            self.photo = res
+             
+        }catch{
+            
+            // THROW THE ERROR HERE
+            
+        }
+//
+
+    }
+
     
     // USING SWIFT CONCURRENCY METHOD FOR API CALL
     

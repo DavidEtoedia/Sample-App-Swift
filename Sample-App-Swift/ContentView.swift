@@ -12,6 +12,7 @@ struct ContentView: View {
     @State private var search: String = ""
     @State private var showSheet: Bool = false
     let spaceName = "scroll"
+
     @State var wholeSize: CGSize = .zero
     @State var scrollViewSize: CGSize = .zero
 
@@ -33,8 +34,8 @@ struct ContentView: View {
 
                                     })
                                     .accentColor(.black.opacity(0.7))
-
-
+                                  
+                                  
 
                                 }
 
