@@ -201,6 +201,8 @@
 			dependencies = (
 			);
 			name = "Sample-App-Swift";
+			packageProductDependencies = (
+			);
 			productName = "Sample-App-Swift";
 			productReference = 0C2FFED4291AF52400D0F8F5 /* Sample-App-Swift.app */;
 			productType = "com.apple.product-type.application";
@@ -229,6 +231,8 @@
 				Base,
 			);
 			mainGroup = 0C2FFECB291AF52400D0F8F5;
+			packageReferences = (
+			);
 			productRefGroup = 0C2FFED5291AF52400D0F8F5 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";

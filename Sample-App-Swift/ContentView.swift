@@ -276,7 +276,7 @@ struct SearchView: View {
             .cornerRadius(10)
             .padding(.horizontal)
             
-            if(viewModel.loading){
+            if(viewModel.searching){
                 ProgressView()
             } else{
                 ScrollView(showsIndicators: false) {

@@ -37,26 +37,37 @@ struct DetailView: View {
                     }
                     .padding(.horizontal, 50)
                     .padding(.vertical, 15)
-                    ScrollView(.horizontal, showsIndicators: true) {
-                        HStack {
-                            ForEach( viewModel.photosDetails?.related_collections?.results ?? [] , id: \.id ) { related in
-                                        ForEach((related.preview_photos ?? []) ) { resultV in
-                                            GeometryReader { geometry in
-                                                ExtractedView(url: resultV.urls?.regular)
-                                                    .shadow(color: Color.black.opacity(0.3), radius: 5, x: 0, y: 2)
-                                                    .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 10)
-                                                    .rotation3DEffect(Angle(degrees: Double(geometry.frame(in: .global).minX)), axis: (x: 20.0, y: 8.0, z: 10.0))
-       
-                                            }
-                                            .frame(width: 246, height: 220)
-                                            .padding(.vertical, 40)
-                                        }
-                            }
-        //                    ImageView(imageUrl: photo?.urls?.regular)
-                        }
-                        .padding(.horizontal, 60)
-//                      .frame(width: UIScreen.main.bounds.size.width, height: 300)
+                    if(viewModel.details){
+                       
+                      ProgressView()
+                        
                     }
+                    else{
+                        ScrollView(.horizontal, showsIndicators: true) {
+                            HStack (spacing: 0){
+                                ForEach( viewModel.photosDetails?.related_collections?.results ?? [] , id: \.id ) { related in
+                                            ForEach((related.preview_photos ?? []) ) { resultV in
+                                                GeometryReader { geometry in
+                                                    ExtractedView(url: resultV.urls?.regular)
+                                                        .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 2)
+                                                        .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 10)
+                                                        .rotation3DEffect(Angle(degrees: (Double(geometry.frame(in: .global).minX) - 53) / -10), axis: (x: 2.0, y: 10.0, z: 2.0))
+           
+                                                }
+                                                .frame(width: 246, height: 220)
+                                                .padding(.vertical, 40)
+                                                .padding(.trailing, 40)
+                                            }
+                                }
+            //                    ImageView(imageUrl: photo?.urls?.regular)
+                            }
+                            .padding([.trailing, .leading], 40)
+                            
+                            
+    //                      .frame(width: UIScreen.main.bounds.size.width, height: 300)
+                        }
+                    }
+                   
                     Spacer(minLength: 20)
                     HStack ( spacing: 10){
                         Text("Likes:")
@@ -97,7 +108,9 @@ struct DetailView: View {
                         }
 
                 }
-                .onAppear(perform: {viewModel.getUserDetails(id: photo?.id ?? "")
+                .onAppear(perform: {
+                    print(viewModel.isLoading)
+                    viewModel.getUserDetails(id: photo?.id ?? "")
                 }
             )
             }

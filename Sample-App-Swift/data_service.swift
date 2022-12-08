@@ -54,6 +54,9 @@ class DataServiceViewModel : ObservableObject{
     var searching : Bool{
         viewState == .searching
     }
+    var details : Bool{
+        viewState == .isDetails
+    }
     init(networkingManager: NetworkHelperProtocol = NetworkHelper.shared) {
            self.networkingManager = networkingManager
        }
@@ -84,10 +87,6 @@ class DataServiceViewModel : ObservableObject{
 //    }
     // USING MVVM WITH COMBINE
     func getData(){
-//        self.loading = true
-//        defer{
-//            self.loading = false
-//        }
         viewState = .isLoading
         defer{ viewState = .success}
         dataSource.getAllPhoto(pages: page)
@@ -139,7 +138,9 @@ class DataServiceViewModel : ObservableObject{
        }
     // USING MVVM WITH COMBINE
     func getUserDetails(id: String){
-//            guard let url = URL(string: "https://api.unsplash.com/photos/\(id)?client_id=CK5_SZXnwCO7ORvuSV9E8UvYRi9Crl9soXY2t9Hwtgo") else {return}
+        viewState = .isDetails
+       
+        defer {viewState = .success }
         dataSource.getDetails(id: id)
             .decode(type: PhotoDetails.self, decoder: JSONDecoder())
             .sink { completion in
@@ -161,8 +162,8 @@ class DataServiceViewModel : ObservableObject{
     
     //  SEARCH FOR PHOTOS
     func searchPhotos(search: String){
-         loading = true
-        defer {loading = false}
+        viewState = .searching
+        defer { viewState = .success}
         
         dataSource.searchPhotos(search: search)
             .decode(type: SearchPhoto.self, decoder: JSONDecoder())
@@ -416,6 +417,7 @@ extension DataServiceViewModel{
         case isLoading
         case searching
         case isFetching
+        case isDetails
         case success
        
     }
