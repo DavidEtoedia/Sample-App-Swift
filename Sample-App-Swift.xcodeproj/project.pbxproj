@@ -11,6 +11,8 @@
 		0C05C583292812F6007DDFE1 /* Url_links.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C05C582292812F6007DDFE1 /* Url_links.swift */; };
 		0C05C58629283A7E007DDFE1 /* photo_details_model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C05C58529283A7E007DDFE1 /* photo_details_model.swift */; };
 		0C05C58929285C12007DDFE1 /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C05C58829285C12007DDFE1 /* DetailView.swift */; };
+		0C15CF662937DAEF00BB4CFF /* searchPhoto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C15CF652937DAEF00BB4CFF /* searchPhoto.swift */; };
+		0C15CF682937DF2F00BB4CFF /* search_result.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C15CF672937DF2F00BB4CFF /* search_result.swift */; };
 		0C1E990D291D4FB700045252 /* data_service.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C1E990C291D4FB700045252 /* data_service.swift */; };
 		0C2FFED8291AF52400D0F8F5 /* Sample_App_SwiftApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C2FFED7291AF52400D0F8F5 /* Sample_App_SwiftApp.swift */; };
 		0C2FFEDA291AF52400D0F8F5 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C2FFED9291AF52400D0F8F5 /* ContentView.swift */; };
@@ -35,6 +37,8 @@
 		0C05C582292812F6007DDFE1 /* Url_links.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Url_links.swift; sourceTree = "<group>"; };
 		0C05C58529283A7E007DDFE1 /* photo_details_model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = photo_details_model.swift; sourceTree = "<group>"; };
 		0C05C58829285C12007DDFE1 /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
+		0C15CF652937DAEF00BB4CFF /* searchPhoto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = searchPhoto.swift; sourceTree = "<group>"; };
+		0C15CF672937DF2F00BB4CFF /* search_result.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = search_result.swift; sourceTree = "<group>"; };
 		0C1E990C291D4FB700045252 /* data_service.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = data_service.swift; sourceTree = "<group>"; };
 		0C2FFED4291AF52400D0F8F5 /* Sample-App-Swift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Sample-App-Swift.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C2FFED7291AF52400D0F8F5 /* Sample_App_SwiftApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sample_App_SwiftApp.swift; sourceTree = "<group>"; };
@@ -83,6 +87,15 @@
 			path = views;
 			sourceTree = "<group>";
 		};
+		0C15CF642937DACB00BB4CFF /* searchPhoto */ = {
+			isa = PBXGroup;
+			children = (
+				0C15CF652937DAEF00BB4CFF /* searchPhoto.swift */,
+				0C15CF672937DF2F00BB4CFF /* search_result.swift */,
+			);
+			path = searchPhoto;
+			sourceTree = "<group>";
+		};
 		0C2FFECB291AF52400D0F8F5 = {
 			isa = PBXGroup;
 			children = (
@@ -127,6 +140,7 @@
 		0CA1B4C229231F7F00F9736E /* model */ = {
 			isa = PBXGroup;
 			children = (
+				0C15CF642937DACB00BB4CFF /* searchPhoto */,
 				0CB4E2E52932D2F6005A3802 /* collections */,
 				0C05C584292835C3007DDFE1 /* photo_detail */,
 				0CA1B4C029230DB700F9736E /* photo_model.swift */,
@@ -190,6 +204,8 @@
 			dependencies = (
 			);
 			name = "Sample-App-Swift";
+			packageProductDependencies = (
+			);
 			productName = "Sample-App-Swift";
 			productReference = 0C2FFED4291AF52400D0F8F5 /* Sample-App-Swift.app */;
 			productType = "com.apple.product-type.application";
@@ -218,6 +234,8 @@
 				Base,
 			);
 			mainGroup = 0C2FFECB291AF52400D0F8F5;
+			packageReferences = (
+			);
 			productRefGroup = 0C2FFED5291AF52400D0F8F5 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -250,6 +268,8 @@
 				0CA1B4C429231FA700F9736E /* user_model.swift in Sources */,
 				0CB4E2E72932D311005A3802 /* related_collections.swift in Sources */,
 				0CC3D15D29302B9000895C97 /* photo_repository.swift in Sources */,
+				0C15CF662937DAEF00BB4CFF /* searchPhoto.swift in Sources */,
+				0C15CF682937DF2F00BB4CFF /* search_result.swift in Sources */,
 				0C05C58929285C12007DDFE1 /* DetailView.swift in Sources */,
 				0C2FFEDA291AF52400D0F8F5 /* ContentView.swift in Sources */,
 				0C1E990D291D4FB700045252 /* data_service.swift in Sources */,

@@ -37,9 +37,37 @@ struct DetailView: View {
                     }
                     .padding(.horizontal, 50)
                     .padding(.vertical, 15)
-
-                    ImageView(imageUrl: viewModel.photosDetails?.urls?.regular)
-                        .padding(.horizontal, 50)
+                    if(viewModel.details){
+                       
+                      ProgressView()
+                        
+                    }
+                    else{
+                        ScrollView(.horizontal, showsIndicators: true) {
+                            HStack (spacing: 0){
+                                ForEach( viewModel.photosDetails?.related_collections?.results ?? [] , id: \.id ) { related in
+                                            ForEach((related.preview_photos ?? []) ) { resultV in
+                                                GeometryReader { geometry in
+                                                    ExtractedView(url: resultV.urls?.regular)
+                                                        .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 2)
+                                                        .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 10)
+                                                        .rotation3DEffect(Angle(degrees: (Double(geometry.frame(in: .global).minX) - 53) / -10), axis: (x: 2.0, y: 10.0, z: 2.0))
+           
+                                                }
+                                                .frame(width: 246, height: 220)
+                                                .padding(.vertical, 40)
+                                                .padding(.trailing, 40)
+                                            }
+                                }
+            //                    ImageView(imageUrl: photo?.urls?.regular)
+                            }
+                            .padding([.trailing, .leading], 40)
+                            
+                            
+    //                      .frame(width: UIScreen.main.bounds.size.width, height: 300)
+                        }
+                    }
+                   
                     Spacer(minLength: 20)
                     HStack ( spacing: 10){
                         Text("Likes:")
@@ -59,9 +87,7 @@ struct DetailView: View {
                     Spacer(minLength: 40)
 
                         ForEach( viewModel.photosDetails?.related_collections?.results ?? [] , id: \.id ) { related in
-        //                    Text(related.preview_photos?.count.description ?? "")
-                        
-                                LazyVGrid(columns: column) {
+                               LazyVGrid(columns: column) {
                                     ForEach((related.preview_photos ?? []) ) { resultV in
                                         AsyncImage(url: URL(string: resultV.urls?.small ?? "")) { returnedImg in
                                             returnedImg
@@ -74,8 +100,7 @@ struct DetailView: View {
                                             ProgressView()
                                                 .padding(.all, 20)
                                         }
-                                        
-                  
+
                                     }
                                     
                                 }
@@ -83,7 +108,9 @@ struct DetailView: View {
                         }
 
                 }
-                .onAppear(perform: {viewModel.getUserDetails(id: photo?.id ?? "")
+                .onAppear(perform: {
+                    print(viewModel.isLoading)
+                    viewModel.getUserDetails(id: photo?.id ?? "")
                 }
             )
             }
@@ -103,3 +130,22 @@ struct DetailView: View {
 //}
 
 
+
+struct ExtractedView: View {
+    let url : String?
+    var body: some View {
+        AsyncImage(url: URL(string: url ?? "")) { returnedImg in
+            returnedImg
+                .resizable()
+                .frame(width: 300.0, height: 200.0)
+                .aspectRatio(contentMode: .fill)
+                .clipShape(RoundedRectangle(cornerRadius: 6.0))
+            
+        }
+        
+    placeholder: {
+        ProgressView()
+            .padding(.all, 20)
+    }
+    }
+}

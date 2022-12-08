@@ -35,6 +35,7 @@ struct PhotoModel : Identifiable, Codable {
 class DataServiceViewModel : ObservableObject{
     @Published var post : [PostModel] = []
     @Published var photo : [PhotoStruct] = []
+    @Published var result :  [Resultss] = []
     @Published var preview_photo : [Preview_photos] = []
     @Published var photosDetails : PhotoDetails?
     @Published var loading : Bool = false
@@ -49,6 +50,12 @@ class DataServiceViewModel : ObservableObject{
     }
     var fetching : Bool{
         viewState == .isFetching
+    }
+    var searching : Bool{
+        viewState == .searching
+    }
+    var details : Bool{
+        viewState == .isDetails
     }
     init(networkingManager: NetworkHelperProtocol = NetworkHelper.shared) {
            self.networkingManager = networkingManager
@@ -135,7 +142,9 @@ class DataServiceViewModel : ObservableObject{
        }
     // USING MVVM WITH COMBINE
     func getUserDetails(id: String){
-//            guard let url = URL(string: "https://api.unsplash.com/photos/\(id)?client_id=CK5_SZXnwCO7ORvuSV9E8UvYRi9Crl9soXY2t9Hwtgo") else {return}
+        viewState = .isDetails
+       
+        defer {viewState = .success }
         dataSource.getDetails(id: id)
             .decode(type: PhotoDetails.self, decoder: JSONDecoder())
             .sink { completion in
@@ -154,6 +163,48 @@ class DataServiceViewModel : ObservableObject{
             .store(in: &cancellables)
 
     }
+    
+    //  SEARCH FOR PHOTOS
+    func searchPhotos(search: String){
+        viewState = .searching
+        defer { viewState = .success}
+        
+        dataSource.searchPhotos(search: search)
+            .decode(type: SearchPhoto.self, decoder: JSONDecoder())
+            .sink { completion in
+                switch completion {
+                case .finished:
+                 print("COMPLETED Search")
+                case .failure(let error):
+                 print("Failed: \(error.localizedDescription)")
+                }
+                
+            } receiveValue: { [weak self] returnedVal in
+                print("RESULT: \(String(describing: returnedVal.results))")
+                self?.result = returnedVal.results ?? []
+             
+            }
+            .store(in: &cancellables)
+
+    }
+    
+    // USING SWIFT CONCURRENCY METHOD FOR API CALL
+    
+    func getImages()async{
+        
+        do{
+            let res = try await networkingManager.photoReq(path: "photos", type: [PhotoStruct].self)
+            self.photo = res
+             
+        }catch{
+            
+            // THROW THE ERROR HERE
+            
+        }
+//
+
+    }
+
     
     // USING SWIFT CONCURRENCY METHOD FOR API CALL
     
@@ -386,7 +437,9 @@ class DataServiceViewModel : ObservableObject{
 extension DataServiceViewModel{
     enum ResultStateVM{
         case isLoading
+        case searching
         case isFetching
+        case isDetails
         case success
        
     }
